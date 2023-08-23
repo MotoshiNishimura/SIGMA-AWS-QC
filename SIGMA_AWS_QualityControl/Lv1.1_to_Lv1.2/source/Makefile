@@ -1,0 +1,25 @@
+# Makefile
+
+#FC=ifort
+#FCFLAGS=-check all -warn all -traceback 
+
+FC=gfortran
+FCFLAGS = -ffree-form -ffree-line-length-none -frepack-arrays -Wall -fbounds-check
+
+OBJS= data_IO.o sol_info.o QC_L1.1.o make_Level1.2data.o
+
+.SUFFIXES: .f90 .o
+
+.f90.o:
+	$(FC) $(FCFLAGS) -c $< -o $@
+
+make_exe: $(OBJS)
+	$(FC) $(OBJS) $(FCFLAGS) -o make_Level1.2data
+	@rm -f *.o *.f90 *.mod 
+
+#clean:
+#	@rm -f *.o *.f90
+
+#cleanall:
+#	@rm -f make_data *.o *.f90
+#	@rm -rf ./include
