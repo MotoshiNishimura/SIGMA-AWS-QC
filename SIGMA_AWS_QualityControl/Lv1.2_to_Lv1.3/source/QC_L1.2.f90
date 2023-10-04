@@ -3,7 +3,6 @@
 ! to create Level 1.3 dataset from Level 1.2 dataset of SIGMA-AWS observation data.
 ! Motoshi Nishimura @ National Institute of Polar Research
 !=======================================================================
-
 module QC_L12_13
   implicit none
 
@@ -19,6 +18,7 @@ module QC_L12_13
   real(8), parameter :: co_transB = 0.872d0 ! Maximum atmospheric transimissivity at SIGMA-B site
 
   real(8), parameter :: mask = -9999.0d0  !constant value repredenting data mask
+  real(8), parameter :: radiation_sensor_mask = -9998.0d0 ! radiation error data when the sensor is covered with snow or ice  
   real(8), parameter :: manual_mask = -8888.0d0  !constant value repredenting data manual mask
   real(8), parameter :: mask_threshold = -8887.0d0  !mask or mannual mask threthold value
 
@@ -163,8 +163,8 @@ subroutine QC_shortwave_radiation (ndata, site_name, SW_TOA, solz, solz_slope, s
   do i = 1, ndata
     if (site_name == 'SIGMA-A') then
       if (solz(i) > 90.0d0) then
-        if (swd(i) < median_swd_A + SD_swd_A * 3.0d0) swd(i) = 0.0d0
-        if (swu(i) < median_swu_A + SD_swu_A * 3.0d0) swu(i) = 0.0d0
+        if (swd(i) > mask_threshold .and. swd(i) < median_swd_A + SD_swd_A * 3.0d0) swd(i) = 0.0d0
+        if (swu(i) > mask_threshold .and. swu(i) < median_swu_A + SD_swu_A * 3.0d0) swu(i) = 0.0d0
       else
         if (SW_TOA(i) /= 0.0d0) then
           if (swd(i) > (co_transA * SW_TOA(i))) swd(i) = mask
@@ -172,7 +172,7 @@ subroutine QC_shortwave_radiation (ndata, site_name, SW_TOA, solz, solz_slope, s
       end if
 
       if (swd(i) > 0.0d0 .and. swu(i) > 0.0d0) then
-        if (swd(i) < swu(i)) swd(i) = -9998.0d0
+        if (swd(i) < swu(i)) swd(i) = radiation_sensor_mask
       end if    
 
       if (i == 26752 .or. i == 34673 .or. i == 42975 .or. i == 54011 .or. i == 54012 .or. i == 60761 .or. i == 61890) swd(i) = manual_mask
@@ -195,8 +195,8 @@ subroutine QC_shortwave_radiation (ndata, site_name, SW_TOA, solz, solz_slope, s
 
     if (site_name == 'SIGMA-B') then
       if (solz_slope(i) > 90.0d0) then
-        if (swd(i) < median_swd_B + SD_swd_B * 3.0d0) swd(i) = 0.0d0
-        if (swu(i) < median_swu_B + SD_swu_B * 3.0d0) swu(i) = 0.0d0
+        if (swd(i) > mask_threshold .and. swd(i) < median_swd_B + SD_swd_B * 3.0d0) swd(i) = 0.0d0
+        if (swu(i) > mask_threshold .and. swu(i) < median_swu_B + SD_swu_B * 3.0d0) swu(i) = 0.0d0
       else
         if (SW_TOA(i) /= 0.0d0) then
           if (swd(i) > (co_transB * SW_TOA(i))) swd(i) = mask
@@ -209,10 +209,10 @@ subroutine QC_shortwave_radiation (ndata, site_name, SW_TOA, solz, solz_slope, s
         &  (swd(i), solz(i), sola(i), SW_TOA(i), swd_slope(i), Id_slope(i), Is_slope(i), solz_slope(i), diffu_ratio(i))
 
       if (swd(i) > 0.0d0 .and. swu(i) > 0.0d0) then
-        if (swd(i) < swu(i)) swd(i) = -9998.0d0
+        if (swd(i) < swu(i)) swd(i) = radiation_sensor_mask
       end if
       if (swd_slope(i) > 0.0d0 .and. swu(i) > 0.0d0) then
-        if (swd_slope(i) < swu(i)) swd_slope(i) = -9998.0d0
+        if (swd_slope(i) < swu(i)) swd_slope(i) = radiation_sensor_mask
       end if
     end if
   end do
@@ -240,8 +240,8 @@ subroutine QC_nir_infrared_radiation (ndata, site_name, SW_TOA, solz, solz_slope
   do i = 1, ndata
     nir_TOA(i) = SW_TOA(i) * ratio_nir
     if (solz(i) > 90.0d0) then
-      if (nird(i) < median_nird_A + SD_nird_A * 3.0d0) nird(i) = 0.0d0
-      if (niru(i) < median_niru_A + SD_niru_A * 3.0d0) niru(i) = 0.0d0
+      if (nird(i) > mask_threshold .and. nird(i) < median_nird_A + SD_nird_A * 3.0d0) nird(i) = 0.0d0
+      if (niru(i) > mask_threshold .and. niru(i) < median_niru_A + SD_niru_A * 3.0d0) niru(i) = 0.0d0
     else
       if (nir_TOA(i) /= 0.0d0) then
         if (nird(i) > (co_transA * nir_TOA(i))) nird(i) = mask
@@ -249,7 +249,7 @@ subroutine QC_nir_infrared_radiation (ndata, site_name, SW_TOA, solz, solz_slope
     end if
 
     if (nird(i) > 0.0d0 .and. niru(i) > 0.0d0) then
-      if (nird(i) < niru(i)) nird(i) = -9998.0d0
+      if (nird(i) < niru(i)) nird(i) = radiation_sensor_mask
     end if
 
     if (site_name == 'SIGMA-A') then
@@ -339,7 +339,7 @@ subroutine QC_albedo (ndata, site_name, month, swd, swd_slope, swu, SW_TOA, solz
         end if
       end if
 
-      if (lwd(i) == -9998.0d0) albedo(i) = mask
+      if (lwd(i) == radiation_sensor_mask) albedo(i) = mask
       if (i == 1891 .or. i == 25208 .or. i == 27876) albedo(i) = manual_mask
     end if
 
@@ -370,7 +370,7 @@ subroutine QC_albedo (ndata, site_name, month, swd, swd_slope, swu, SW_TOA, solz
         end if
       end if
 
-      if (lwd(i) == -9998.0d0) albedo(i) = mask  
+      if (lwd(i) == radiation_sensor_mask) albedo(i) = mask  
       if (i == 1579 .or. i == 58146 .or. i == 58218) albedo(i) = manual_mask
     end if
   end do
@@ -416,7 +416,7 @@ subroutine QC_nir_infrared_albedo (ndata, site_name, month, nird, niru, solz, lw
         end if
       end if
 
-      if (lwd(i) == -9998.0d0) nir_albedo(i) = mask
+      if (lwd(i) == radiation_sensor_mask) nir_albedo(i) = mask
     end if
 
     if (site_name == 'SIGMA-B') then
@@ -511,27 +511,43 @@ subroutine QC_longwave_radiation (ndata, site_name, atemp1, atemp2, lwd, lwu)
   real(8), intent(inout)   :: lwd(ndata), lwu(ndata)
 
   integer(8) :: i
+  real(8) :: atemp(ndata)
   real(8) :: lw_standard
 
+  real(8), parameter :: arh_threshold = 92.61d0
   real(8), parameter :: median_delta_lwd = 11.76d0
   real(8), parameter :: median_delta_lwu = 47.89d0
   real(8), parameter :: SD_lwd = 41.40d0
   real(8), parameter :: SD_lwu = 21.22d0
+
+  if (site_name == 'SIGMA-A') then
+    atemp = atemp2
+  end if
+  if (site_name == 'SIGMA-B') then
+    atemp = atemp1
+  end if
+
   
   do i = 1, ndata
+  
     if (site_name == 'SIGMA-A') then
-      if (atemp2(i) > mask_threshold) then
+      if (atemp(i) > mask_threshold) then
         ! Brock and Arnold (2000)
-        lw_standard = standard_longwave_radiation (atemp2(i), 0.5d0)
+        lw_standard = standard_longwave_radiation (atemp(i), 0.5d0)
+        if (lwd(i) > mask_threshold) then
 
-        if (abs(lwd(i) - lw_standard) > (median_delta_lwd + SD_lwd * 2)) lwd(i) = mask 
-        if (i >= 41803 .and. i <= 43182) then ! 19:00 on Apr. 7, 2017 - 6:00 on Jun. 4, 2017
-          if (abs(lwd(i) - lw_standard) > (median_delta_lwd + SD_lwd)) lwd(i) = mask
+          if (abs(lwd(i) - lw_standard) > (median_delta_lwd + SD_lwd * 2)) lwd(i) = mask 
+          if (i >= 41803 .and. i <= 43182) then ! 19:00 on Apr. 7, 2017 - 6:00 on Jun. 4, 2017
+            if (abs(lwd(i) - lw_standard) > (median_delta_lwd + SD_lwd)) lwd(i) = mask
+          end if
+          if (i >= 45313) then ! 1:00 on Sep. 1, 2017 -
+            if (abs(lwd(i) - lw_standard) > (median_delta_lwd + SD_lwd)) lwd(i) = mask
+          end if
         end if
-        if (i >= 45313) then ! 1:00 on Sep. 1, 2017 -
-          if (abs(lwd(i) - lw_standard) > (median_delta_lwd + SD_lwd)) lwd(i) = mask
-        end if
-        if (abs(lwu(i) - lw_standard) > (median_delta_lwu + SD_lwu * 2)) lwu(i) = mask
+        
+        if (lwd(i) > mask_threshold) then
+          if (abs(lwu(i) - lw_standard) > (median_delta_lwu + SD_lwu * 2)) lwu(i) = mask
+        end if          
       else
         lw_standard = mask
       end if
@@ -562,9 +578,9 @@ subroutine QC_longwave_radiation (ndata, site_name, atemp1, atemp2, lwd, lwu)
     end if
     
     if (site_name == 'SIGMA-B') then
-      if (atemp1(i) > mask_threshold) then
+      if (atemp(i) > mask_threshold) then
         ! Brock and Arnold (2000)
-        lw_standard = standard_longwave_radiation (atemp1(i), 0.5d0)
+        lw_standard = standard_longwave_radiation (atemp(i), 0.5d0)
       else
         lw_standard = mask
       end if
