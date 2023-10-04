@@ -4,7 +4,7 @@ The SIGMA-AWS-QC program is a quality control (QC) program for meteorological da
 The dataset before QC processing is stored in ./Lv1.1_to_1.2/input.
 The data after processing will be stored in ./Lv1.1_to_1.2/output.
 
-To run this program, please execute the commands in the order of;
+To run this program, please execute the commands in the order of;  
 ./Lv1.1_to_Lv.1.2  
 $make  
 $cd run  
