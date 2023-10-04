@@ -545,7 +545,7 @@ subroutine QC_longwave_radiation (ndata, site_name, atemp1, atemp2, lwd, lwu)
           end if
         end if
         
-        if (lwd(i) > mask_threshold) then
+        if (lwu(i) > mask_threshold) then
           if (abs(lwu(i) - lw_standard) > (median_delta_lwu + SD_lwu * 2)) lwu(i) = mask
         end if          
       else
