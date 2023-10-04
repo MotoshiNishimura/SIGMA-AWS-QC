@@ -5,11 +5,11 @@ The dataset before QC processing is stored in ./Lv1.1_to_1.2/input.
 The data after processing will be stored in ./Lv1.1_to_1.2/output.
 
 To run this program, please execute the commands in the order of;
-./Lv1.1_to_Lv.1.2
-$make
-$cd run
-$make 
-$sh run_make_L1.2.sh
+./Lv1.1_to_Lv.1.2  
+$make  
+$cd run  
+$make  
+$sh run_make_L1.2.sh  
 
 However, it is necessary to edit "site_flag" in run_make_L1.2.sh before execution.
 Define the name of the site for data processing as "site_flag" before execution.
